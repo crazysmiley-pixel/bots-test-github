@@ -157,7 +157,7 @@ decideNextActionWhenInSpace botMemory memoryReading =
                 DescribeBranch "The ore hold is full enough. Dock to station."
                     (case botMemory.lastDockedStationNameFromInfoPanel of
                         Nothing ->
-                            DescribeBranch "At which station should I dock?. I was never docked in a station in this session." (EndDecisionPath Wait)
+                            dockToStation { stationNameFromInfoPanel = lastDockedStationNameFromInfoPanel } memoryReading
 
                         Just lastDockedStationNameFromInfoPanel ->
                             dockToStation { stationNameFromInfoPanel = lastDockedStationNameFromInfoPanel } memoryReading
@@ -250,8 +250,6 @@ dockToStation { stationNameFromInfoPanel } memoryReading =
                           , lastContextMenuOrSubmenu
                                 >> Maybe.andThen
                                     (.entries
-                                        >> List.filter
-                                            (menuEntryMatchesStationNameFromCurrentSystemInfoPanel stationNameFromInfoPanel)
                                         >> List.head
                                     )
                                 >> Maybe.map (.uiElement >> clickOnUIElement MouseButtonLeft)
