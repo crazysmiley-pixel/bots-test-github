@@ -157,7 +157,7 @@ decideNextActionWhenInSpace botMemory memoryReading =
                 DescribeBranch "The ore hold is full enough. Dock to station."
                     (case botMemory.lastDockedStationNameFromInfoPanel of
                         Nothing ->
-                            dockToStation { stationNameFromInfoPanel = lastDockedStationNameFromInfoPanel } memoryReading
+                            dockToStation { stationNameFromInfoPanel = "" } memoryReading
 
                         Just lastDockedStationNameFromInfoPanel ->
                             dockToStation { stationNameFromInfoPanel = lastDockedStationNameFromInfoPanel } memoryReading
