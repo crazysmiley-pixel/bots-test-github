@@ -251,8 +251,6 @@ dockToStation { stationNameFromInfoPanel } memoryReading =
                           , lastContextMenuOrSubmenu
                                 >> Maybe.andThen
                                     (.entries
-                                        >> List.filter
-                                            (menuEntryMatchesStationNameFromLocationInfoPanel stationNameFromInfoPanel)
                                         >> List.head
                                     )
                                 >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
