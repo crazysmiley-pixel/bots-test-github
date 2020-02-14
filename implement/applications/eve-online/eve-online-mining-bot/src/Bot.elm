@@ -398,23 +398,23 @@ describeMemoryReadingForMonitoring : MemoryReading -> String
 describeMemoryReadingForMonitoring memoryReading =
     let
         describeShip =
-            if ((memoryReading.shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) then
-                dockToStation { stationNameFromInfoPanel = "" } memoryReading
-            else
-                case memoryReading.shipUi of
-                    CanSee shipUi ->
+            case memoryReading.shipUi of
+                CanSee shipUi ->
+                    if ((shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) then
+                        dockToStation { stationNameFromInfoPanel = "" } memoryReading
+                    else
                         "I am in space, shield HP at " ++ ((shipUi.hitpointsAndEnergyMilli.shield // 10) |> String.fromInt) ++ "%."
+                    
                         
-                            
-                        
+                    
 
-                    CanNotSeeIt ->
-                        case memoryReading.infoPanelCurrentSystem |> maybeVisibleAndThen .expandedContent |> maybeNothingFromCanNotSeeIt |> Maybe.andThen .currentStationName of
-                            Just stationName ->
-                                "I am docked at '" ++ stationName ++ "'."
+                CanNotSeeIt ->
+                    case memoryReading.infoPanelCurrentSystem |> maybeVisibleAndThen .expandedContent |> maybeNothingFromCanNotSeeIt |> Maybe.andThen .currentStationName of
+                        Just stationName ->
+                            "I am docked at '" ++ stationName ++ "'."
 
-                            Nothing ->
-                                "I cannot see if I am docked or in space. Please set up game client first."
+                        Nothing ->
+                            "I cannot see if I am docked or in space. Please set up game client first."
 
         describeOreHold =
             "Ore hold filled " ++ (memoryReading |> oreHoldFillPercent |> Maybe.map String.fromInt |> Maybe.withDefault "Unknown") ++ "%."
