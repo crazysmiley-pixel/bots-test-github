@@ -398,7 +398,7 @@ describeMemoryReadingForMonitoring : MemoryReading -> String
 describeMemoryReadingForMonitoring memoryReading =
     let
         describeShip =
-            if ((shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) then
+            if ((memoryReading.shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) then
                 dockToStation { stationNameFromInfoPanel = "" } memoryReading
             else
                 case memoryReading.shipUi of
