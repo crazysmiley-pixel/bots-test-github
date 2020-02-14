@@ -531,7 +531,7 @@ isShipTakingDamage : MemoryReading -> Bool
 isShipTakingDamage =
     .shipUi
         >> maybeNothingFromCanNotSeeIt
-        >> Maybe.andThen ((shipUi.hitpointsAndEnergyMilli.shield // 10) < 80)
+        >> Maybe.andThen ((.hitpointsAndEnergy.shield // 10) < 80)
         -- If the ship is just floating in space, there might be no indication displayed.
         >> Maybe.withDefault False
     
