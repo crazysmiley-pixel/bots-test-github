@@ -522,7 +522,7 @@ firstAsteroidFromOverviewWindow =
 
 overviewWindowEntryIsInRange : OverviewWindowEntry -> Maybe Bool
 overviewWindowEntryIsInRange =
-    .distanceInMeters >> Result.map (\distanceInMeters -> distanceInMeters < 1000) >> Result.toMaybe
+    .distanceInMeters >> Result.map (\distanceInMeters -> distanceInMeters < 10000) >> Result.toMaybe
 
 
 overviewWindowEntriesRepresentingAsteroids : MemoryReading -> List OverviewWindowEntry
