@@ -403,7 +403,7 @@ describeMemoryReadingForMonitoring memoryReading =
                     if ((shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) then
                         dockToStation { stationNameFromInfoPanel = "" } memoryReading
                     else
-                        DescribeBranch "I am in space, shield HP at " ++ ((shipUi.hitpointsAndEnergyMilli.shield // 10) |> String.fromInt) ++ "%."
+                        DescribeBranch "I am in space............"
                     
                         
                     
