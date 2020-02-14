@@ -90,7 +90,7 @@ decideNextAction botMemory memoryReading =
         -- TODO: Look also on the previous memory reading.
         DescribeBranch "I see we are warping." (EndDecisionPath Wait)
 
-    else if memoryReading |> isShipTakingDamage then
+    else if memoryReading.shipUi |> isShipTakingDamage then
         dockToStation { stationNameFromInfoPanel = "" } memoryReading
     
     else if memoryReading.overviewWindow == CanNotSeeIt then
@@ -529,7 +529,7 @@ firstAsteroidFromOverviewWindow =
 
 isShipTakingDamage : MemoryReading -> Bool
 isShipTakingDamage =
-    .shield >> ((Sanderling.MemoryMeasurementParsed.Value.ShipUi.hitpointsAndEnergyMilli.shield // 10) < 80) >> Result.toMaybe
+    .shipUi >> ((shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) >> Result.toMaybe
     
 overviewWindowEntryIsInRange : OverviewWindowEntry -> Maybe Bool
 overviewWindowEntryIsInRange =
