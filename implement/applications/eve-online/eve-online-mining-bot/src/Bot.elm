@@ -224,7 +224,7 @@ decideNextActionAcquireLockedTarget memoryReading =
                                         >> Maybe.andThen (menuEntryContainingTextIgnoringCase "orbit")
                                         >> Maybe.map (.uiElement >> clickOnUIElement MouseButtonLeft)
                                   )
-                                , ( "Click menu entry '10 km'"
+                                , ( "Click menu entry '5,000 m'"
                                   , lastContextMenuOrSubmenu
                                         >> Maybe.andThen (menuEntryContainingTextIgnoringCase "10 km")
                                         >> Maybe.map (.uiElement >> clickOnUIElement MouseButtonLeft)
