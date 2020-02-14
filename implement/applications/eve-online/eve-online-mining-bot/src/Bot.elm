@@ -89,9 +89,6 @@ decideNextAction botMemory memoryReading =
     if memoryReading |> isShipWarpingOrJumping then
         -- TODO: Look also on the previous memory reading.
         DescribeBranch "I see we are warping." (EndDecisionPath Wait)
-
-    else if memoryReading.shipUi |> isShipTakingDamage then
-        dockToStation { stationNameFromInfoPanel = "" } memoryReading
     
     else if memoryReading.overviewWindow == CanNotSeeIt then
         DescribeBranch "I see no overview window, assume we are docked." (decideNextActionWhenDocked memoryReading)
@@ -401,17 +398,23 @@ describeMemoryReadingForMonitoring : MemoryReading -> String
 describeMemoryReadingForMonitoring memoryReading =
     let
         describeShip =
-            case memoryReading.shipUi of
-                CanSee shipUi ->
-                    "I am in space, shield HP at " ++ ((shipUi.hitpointsAndEnergyMilli.shield // 10) |> String.fromInt) ++ "%."
+            if ((shipUi.hitpointsAndEnergyMilli.shield // 10) < 80 then
+                dockToStation { stationNameFromInfoPanel = "" } memoryReading
+            else
+                case memoryReading.shipUi of
+                    CanSee shipUi ->
+                        "I am in space, shield HP at " ++ ((shipUi.hitpointsAndEnergyMilli.shield // 10) |> String.fromInt) ++ "%."
+                        
+                            
+                        
 
-                CanNotSeeIt ->
-                    case memoryReading.infoPanelCurrentSystem |> maybeVisibleAndThen .expandedContent |> maybeNothingFromCanNotSeeIt |> Maybe.andThen .currentStationName of
-                        Just stationName ->
-                            "I am docked at '" ++ stationName ++ "'."
+                    CanNotSeeIt ->
+                        case memoryReading.infoPanelCurrentSystem |> maybeVisibleAndThen .expandedContent |> maybeNothingFromCanNotSeeIt |> Maybe.andThen .currentStationName of
+                            Just stationName ->
+                                "I am docked at '" ++ stationName ++ "'."
 
-                        Nothing ->
-                            "I cannot see if I am docked or in space. Please set up game client first."
+                            Nothing ->
+                                "I cannot see if I am docked or in space. Please set up game client first."
 
         describeOreHold =
             "Ore hold filled " ++ (memoryReading |> oreHoldFillPercent |> Maybe.map String.fromInt |> Maybe.withDefault "Unknown") ++ "%."
@@ -526,14 +529,6 @@ lastContextMenuOrSubmenu =
 firstAsteroidFromOverviewWindow : MemoryReading -> Maybe OverviewWindowEntry
 firstAsteroidFromOverviewWindow =
     overviewWindowEntriesRepresentingAsteroids >> List.head
-
-isShipTakingDamage : MemoryReading -> Bool
-isShipTakingDamage =
-    .shipUi
-        >> maybeNothingFromCanNotSeeIt
-        >> Maybe.andThen ((.shield // 10) < 80)
-        -- If the ship is just floating in space, there might be no indication displayed.
-        >> Maybe.withDefault False
     
 overviewWindowEntryIsInRange : OverviewWindowEntry -> Maybe Bool
 overviewWindowEntryIsInRange =
