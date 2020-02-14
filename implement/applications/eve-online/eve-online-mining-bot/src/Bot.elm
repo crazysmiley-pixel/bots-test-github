@@ -214,14 +214,19 @@ decideNextActionAcquireLockedTarget memoryReading =
                     )
 
             else
-                DescribeBranch "Asteroid is not in range. Approach."
+                DescribeBranch "Asteroid is not in range. Orbit."
                     (EndDecisionPath
                         (Act
                             { firstAction = asteroidInOverview.uiElement |> clickOnUIElement MouseButtonRight
                             , followingSteps =
-                                [ ( "Click menu entry 'approach'."
+                                [ ( "Click menu entry 'orbit'."
                                   , lastContextMenuOrSubmenu
-                                        >> Maybe.andThen (menuEntryContainingTextIgnoringCase "approach")
+                                        >> Maybe.andThen (menuEntryContainingTextIgnoringCase "orbit")
+                                        >> Maybe.map (.uiElement >> clickOnUIElement MouseButtonLeft)
+                                  )
+                                , ( "Click menu entry '10 km'"
+                                  , lastContextMenuOrSubmenu
+                                        >> Maybe.andThen (menuEntryContainingTextIgnoringCase "10 km")
                                         >> Maybe.map (.uiElement >> clickOnUIElement MouseButtonLeft)
                                   )
                                 ]
