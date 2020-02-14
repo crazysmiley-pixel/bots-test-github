@@ -529,7 +529,7 @@ firstAsteroidFromOverviewWindow =
 
 isShipTakingDamage : MemoryReading -> Bool
 isShipTakingDamage =
-    .shipUi >> ((shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) >> Result.toMaybe
+    .shipUi >> ((memoryReading.shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) >> Result.toMaybe
     
 overviewWindowEntryIsInRange : OverviewWindowEntry -> Maybe Bool
 overviewWindowEntryIsInRange =
