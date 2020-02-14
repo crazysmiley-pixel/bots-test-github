@@ -402,6 +402,8 @@ describeMemoryReadingForMonitoring memoryReading =
                 CanSee shipUi ->
                     if ((shipUi.hitpointsAndEnergyMilli.shield // 10) < 80) then
                         dockToStation { stationNameFromInfoPanel = "" } memoryReading
+                    else
+                        Nothing
                     
                         
                     
