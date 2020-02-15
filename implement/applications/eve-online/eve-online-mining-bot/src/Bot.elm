@@ -411,10 +411,10 @@ describeMemoryReadingForMonitoring memoryReading =
                 CanNotSeeIt ->
                     case memoryReading.infoPanelCurrentSystem |> maybeVisibleAndThen .expandedContent |> maybeNothingFromCanNotSeeIt |> Maybe.andThen .currentStationName of
                         Just stationName ->
-                            "I am docked at '" ++ stationName ++ "'."
+                            DescribeBranch "I am docked at '" ++ stationName ++ "'." (EndDecisionPath Wait)
 
                         Nothing ->
-                            "I cannot see if I am docked or in space. Please set up game client first."
+                            DescribeBranch "I cannot see if I am docked or in space. Please set up game client first." (EndDecisionPath Wait)
 
         describeOreHold =
             "Ore hold filled " ++ (memoryReading |> oreHoldFillPercent |> Maybe.map String.fromInt |> Maybe.withDefault "Unknown") ++ "%."
