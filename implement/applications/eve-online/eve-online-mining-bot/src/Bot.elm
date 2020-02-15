@@ -417,9 +417,9 @@ describeMemoryReadingForMonitoring memoryReading =
                             DescribeBranch "I cannot see if I am docked or in space. Please set up game client first." (EndDecisionPath Wait)
 
         describeOreHold =
-            "Ore hold filled " ++ (memoryReading |> oreHoldFillPercent |> Maybe.map String.fromInt |> Maybe.withDefault "Unknown") ++ "%."
+            "Ore hold filled " (EndDecisionPath Wait)
     in
-    [ describeShip, describeOreHold ] |> String.join " "
+    [ describeShip, describeOreHold ]
 
 
 integrateCurrentReadingsIntoBotMemory : MemoryReading -> BotMemory -> BotMemory
