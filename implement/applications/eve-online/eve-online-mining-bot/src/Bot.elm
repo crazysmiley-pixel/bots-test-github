@@ -411,7 +411,7 @@ describeMemoryReadingForMonitoring memoryReading =
                 CanNotSeeIt ->
                     case memoryReading.infoPanelCurrentSystem |> maybeVisibleAndThen .expandedContent |> maybeNothingFromCanNotSeeIt |> Maybe.andThen .currentStationName of
                         Just stationName ->
-                            DescribeBranch "I am docked at '" ++ stationName ++ "'." (EndDecisionPath Wait)
+                            DescribeBranch "I am docked........" (EndDecisionPath Wait)
 
                         Nothing ->
                             DescribeBranch "I cannot see if I am docked or in space. Please set up game client first." (EndDecisionPath Wait)
