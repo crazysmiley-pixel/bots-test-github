@@ -417,7 +417,7 @@ describeMemoryReadingForMonitoring memoryReading =
                             DescribeBranch "I cannot see if I am docked or in space. Please set up game client first." (EndDecisionPath Wait)
 
         describeOreHold =
-            "Ore hold filled " (EndDecisionPath Wait)
+            DescribeBranch "Ore hold filled " (EndDecisionPath Wait)
     in
     [ describeShip, describeOreHold ]
 
