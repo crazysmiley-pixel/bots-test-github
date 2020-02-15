@@ -394,7 +394,7 @@ simpleProcessEvent eventAtTime stateBefore =
             }
 
 
-describeMemoryReadingForMonitoring : MemoryReading -> String
+describeMemoryReadingForMonitoring : MemoryReading -> List DecisionPathNode
 describeMemoryReadingForMonitoring memoryReading =
     let
         describeShip =
