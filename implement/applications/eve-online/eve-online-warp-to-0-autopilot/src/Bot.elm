@@ -1,5 +1,5 @@
-{- This is a warp to 0km auto-pilot, making your travels faster and thus safer by directly warping to gates/stations.
-   The bot follows the route set in the in-game autopilot and uses the context menu to initiate jump and dock commands.
+{- EVE Online Warp-to-0 auto-pilot version 2020-01-21
+   This bot makes your travels faster and safer by directly warping to gates/stations. It follows the route set in the in-game autopilot and uses the context menu to initiate jump and dock commands.
    Before starting the bot, set the in-game autopilot route and make sure the autopilot is expanded, so that the route is visible.
    Make sure you are undocked before starting the bot because the bot does not undock.
 
@@ -15,19 +15,16 @@ module Bot exposing
     )
 
 import BotEngine.Interface_To_Host_20190808 as InterfaceToHost
-import Sanderling.Sanderling as Sanderling exposing (MouseButton(..), centerFromRegion, effectMouseClickAtLocation)
-import Sanderling.SanderlingMemoryMeasurement as SanderlingMemoryMeasurement
+import Sanderling.MemoryReading
     exposing
         ( InfoPanelRouteRouteElementMarker
         , MaybeVisible(..)
-        , ShipUi
+        , ParsedUserInterface
+        , ShipUI
         , maybeNothingFromCanNotSeeIt
         )
+import Sanderling.Sanderling as Sanderling exposing (MouseButton(..), centerFromRegion, effectMouseClickAtLocation)
 import Sanderling.SimpleSanderling as SimpleSanderling exposing (BotEventAtTime, BotRequest(..))
-
-
-type alias MemoryMeasurement =
-    SanderlingMemoryMeasurement.MemoryMeasurementReducedWithNamedNodes
 
 
 {-| The autopilot bot does not need to remember anything from the past; the information on the game client screen is sufficient to decide what to do next.
@@ -48,26 +45,38 @@ initState =
 
 processEvent : InterfaceToHost.BotEvent -> State -> ( State, InterfaceToHost.BotResponse )
 processEvent =
-    SimpleSanderling.processEvent simpleProcessEvent
+    SimpleSanderling.processEvent processEveOnlineBotEvent
 
 
-simpleProcessEvent : BotEventAtTime -> SimpleState -> { newState : SimpleState, requests : List BotRequest, statusMessage : String }
-simpleProcessEvent eventAtTime stateBefore =
+processEveOnlineBotEvent :
+    BotEventAtTime
+    -> SimpleState
+    -> { newState : SimpleState, requests : List BotRequest, millisecondsToNextMemoryReading : Int, statusDescriptionText : String }
+processEveOnlineBotEvent eventAtTime stateBefore =
     case eventAtTime.event of
-        SimpleSanderling.MemoryMeasurementCompleted memoryMeasurement ->
+        SimpleSanderling.MemoryReadingCompleted memoryReading ->
             let
                 ( requests, statusMessage ) =
-                    botRequestsFromGameClientState memoryMeasurement
+                    botRequestsFromGameClientState memoryReading
+
+                millisecondsToNextMemoryReading =
+                    if requests |> List.isEmpty then
+                        4000
+
+                    else
+                        2000
             in
             { newState = stateBefore
             , requests = requests
-            , statusMessage = statusMessage
+            , millisecondsToNextMemoryReading = millisecondsToNextMemoryReading
+            , statusDescriptionText = statusMessage
             }
 
         SimpleSanderling.SetBotConfiguration botConfiguration ->
             { newState = stateBefore
             , requests = []
-            , statusMessage =
+            , millisecondsToNextMemoryReading = 2000
+            , statusDescriptionText =
                 if botConfiguration |> String.isEmpty then
                     ""
 
@@ -76,54 +85,50 @@ simpleProcessEvent eventAtTime stateBefore =
             }
 
 
-botRequestsFromGameClientState : MemoryMeasurement -> ( List BotRequest, String )
-botRequestsFromGameClientState memoryMeasurement =
-    case memoryMeasurement |> infoPanelRouteFirstMarkerFromMemoryMeasurement of
+botRequestsFromGameClientState : ParsedUserInterface -> ( List BotRequest, String )
+botRequestsFromGameClientState parsedUserInterface =
+    case parsedUserInterface |> infoPanelRouteFirstMarkerFromParsedUserInterface of
         Nothing ->
-            ( [ TakeMemoryMeasurementAfterDelayInMilliseconds 4000 ]
+            ( []
             , "I see no route in the info panel. I will start when a route is set."
             )
 
         Just infoPanelRouteFirstMarker ->
-            case memoryMeasurement.shipUi of
+            case parsedUserInterface.shipUI of
                 CanNotSeeIt ->
-                    ( [ TakeMemoryMeasurementAfterDelayInMilliseconds 4000 ]
+                    ( []
                     , "I cannot see if the ship is warping or jumping. I wait for the ship UI to appear on the screen."
                     )
 
                 CanSee shipUi ->
                     if shipUi |> isShipWarpingOrJumping then
-                        ( [ TakeMemoryMeasurementAfterDelayInMilliseconds 4000 ]
+                        ( []
                         , "I see the ship is warping or jumping. I wait until that maneuver ends."
                         )
 
                     else
-                        let
-                            ( requests, statusMessage ) =
-                                botRequestsWhenNotWaitingForShipManeuver
-                                    memoryMeasurement
-                                    infoPanelRouteFirstMarker
-                        in
-                        ( requests ++ [ TakeMemoryMeasurementAfterDelayInMilliseconds 2000 ], statusMessage )
+                        botRequestsWhenNotWaitingForShipManeuver
+                            parsedUserInterface
+                            infoPanelRouteFirstMarker
 
 
 botRequestsWhenNotWaitingForShipManeuver :
-    MemoryMeasurement
+    ParsedUserInterface
     -> InfoPanelRouteRouteElementMarker
     -> ( List BotRequest, String )
-botRequestsWhenNotWaitingForShipManeuver memoryMeasurement infoPanelRouteFirstMarker =
+botRequestsWhenNotWaitingForShipManeuver parsedUserInterface infoPanelRouteFirstMarker =
     let
         openMenuAnnouncementAndEffect =
             ( [ EffectOnGameClientWindow
                     (effectMouseClickAtLocation
                         Sanderling.MouseButtonRight
-                        (infoPanelRouteFirstMarker.uiElement.region |> centerFromRegion)
+                        (infoPanelRouteFirstMarker.uiNode.totalDisplayRegion |> centerFromRegion)
                     )
               ]
             , "I click on the route marker in the info panel to open the menu."
             )
     in
-    case memoryMeasurement.contextMenus |> List.head of
+    case parsedUserInterface.contextMenus |> List.head of
         Nothing ->
             openMenuAnnouncementAndEffect
 
@@ -147,28 +152,28 @@ botRequestsWhenNotWaitingForShipManeuver memoryMeasurement infoPanelRouteFirstMa
                     openMenuAnnouncementAndEffect
 
                 Just menuEntryToClick ->
-                    ( [ EffectOnGameClientWindow (effectMouseClickAtLocation MouseButtonLeft (menuEntryToClick.uiElement.region |> centerFromRegion)) ]
+                    ( [ EffectOnGameClientWindow (effectMouseClickAtLocation MouseButtonLeft (menuEntryToClick.uiNode.totalDisplayRegion |> centerFromRegion)) ]
                     , "I click on the menu entry '" ++ menuEntryToClick.text ++ "' to start the next ship maneuver."
                     )
 
 
-infoPanelRouteFirstMarkerFromMemoryMeasurement : MemoryMeasurement -> Maybe InfoPanelRouteRouteElementMarker
-infoPanelRouteFirstMarkerFromMemoryMeasurement =
+infoPanelRouteFirstMarkerFromParsedUserInterface : ParsedUserInterface -> Maybe InfoPanelRouteRouteElementMarker
+infoPanelRouteFirstMarkerFromParsedUserInterface =
     .infoPanelRoute
         >> maybeNothingFromCanNotSeeIt
         >> Maybe.map .routeElementMarker
-        >> Maybe.map (List.sortBy (\routeMarker -> routeMarker.uiElement.region.left + routeMarker.uiElement.region.top))
+        >> Maybe.map (List.sortBy (\routeMarker -> routeMarker.uiNode.totalDisplayRegion.x + routeMarker.uiNode.totalDisplayRegion.y))
         >> Maybe.andThen List.head
 
 
-isShipWarpingOrJumping : ShipUi -> Bool
+isShipWarpingOrJumping : ShipUI -> Bool
 isShipWarpingOrJumping =
     .indication
         >> maybeNothingFromCanNotSeeIt
         >> Maybe.andThen (.maneuverType >> maybeNothingFromCanNotSeeIt)
         >> Maybe.map
             (\maneuverType ->
-                [ SanderlingMemoryMeasurement.Warp, SanderlingMemoryMeasurement.Jump ]
+                [ Sanderling.MemoryReading.ManeuverWarp, Sanderling.MemoryReading.ManeuverJump ]
                     |> List.member maneuverType
             )
         -- If the ship is just floating in space, there might be no indication displayed.
