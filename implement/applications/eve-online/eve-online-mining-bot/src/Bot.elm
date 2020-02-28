@@ -157,7 +157,7 @@ decideNextActionWhenInSpace botMemory memoryReading =
                 DescribeBranch "The ore hold is full enough. Dock to station."
                     (case botMemory.lastDockedStationNameFromInfoPanel of
                         Nothing ->
-                            DescribeBranch "At which station should I dock?. I was never docked in a station in this session." (EndDecisionPath Wait)
+                            dockToStation { stationNameFromInfoPanel = "" } memoryReading
 
                         Just lastDockedStationNameFromInfoPanel ->
                             dockToStation { stationNameFromInfoPanel = lastDockedStationNameFromInfoPanel } memoryReading
@@ -250,8 +250,6 @@ dockToStation { stationNameFromInfoPanel } memoryReading =
                           , lastContextMenuOrSubmenu
                                 >> Maybe.andThen
                                     (.entries
-                                        >> List.filter
-                                            (menuEntryMatchesStationNameFromLocationInfoPanel stationNameFromInfoPanel)
                                         >> List.head
                                     )
                                 >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
@@ -528,7 +526,7 @@ topmostAsteroidFromOverviewWindow =
 
 overviewWindowEntryIsInRange : OverviewWindowEntry -> Maybe Bool
 overviewWindowEntryIsInRange =
-    .distanceInMeters >> Result.map (\distanceInMeters -> distanceInMeters < 1000) >> Result.toMaybe
+    .distanceInMeters >> Result.map (\distanceInMeters -> distanceInMeters < 15000) >> Result.toMaybe
 
 
 overviewWindowEntriesRepresentingAsteroids : ParsedUserInterface -> List OverviewWindowEntry
