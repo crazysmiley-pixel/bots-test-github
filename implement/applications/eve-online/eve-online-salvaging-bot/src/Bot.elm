@@ -150,21 +150,15 @@ decideNextActionWhenInSpace : BotMemory -> ParsedUserInterface -> DecisionPathNo
 decideNextActionWhenInSpace botMemory memoryReading =
     case memoryReading |> oreHoldFillPercent of
         Nothing ->
-            DescribeBranch "I cannot see the ore hold capacity gauge." (EndDecisionPath Wait)
+            DescribeBranch "I cannot see the hold capacity gauge." (EndDecisionPath Wait)
 
         Just fillPercent ->
             if 99 <= fillPercent then
-                DescribeBranch "The ore hold is full enough. Dock to station."
-                    (case botMemory.lastDockedStationNameFromInfoPanel of
-                        Nothing ->
-                            dockToStation { stationNameFromInfoPanel = "" } memoryReading
-
-                        Just lastDockedStationNameFromInfoPanel ->
-                            dockToStation { stationNameFromInfoPanel = lastDockedStationNameFromInfoPanel } memoryReading
-                    )
+                DescribeBranch "The hold is full enough. Wait"
+                    (EndDecisionPath Wait)
 
             else
-                DescribeBranch "The ore hold is not full enough yet. Get more ore."
+                DescribeBranch "The hold is not full enough yet. Get more."
                     (case memoryReading.targets |> List.head of
                         Nothing ->
                             DescribeBranch "I see no locked target." (decideNextActionAcquireLockedTarget memoryReading)
@@ -408,7 +402,7 @@ describeMemoryReadingForMonitoring memoryReading =
                             "I cannot see if I am docked or in space. Please set up game client first."
 
         describeOreHold =
-            "Ore hold filled " ++ (memoryReading |> oreHoldFillPercent |> Maybe.map String.fromInt |> Maybe.withDefault "Unknown") ++ "%."
+            "Hold filled " ++ (memoryReading |> oreHoldFillPercent |> Maybe.map String.fromInt |> Maybe.withDefault "Unknown") ++ "%."
     in
     [ describeShip, describeOreHold ] |> String.join " "
 
