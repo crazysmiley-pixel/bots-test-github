@@ -120,10 +120,10 @@ decideNextActionWhenInSpace botMemory memoryReading =
                                 (case memoryReading |> shipUiMiningModules |> List.filter (.isActive >> Maybe.withDefault False >> not) |> List.head of
                                     -- TODO: Check previous memory reading too for module activity.
                                     Nothing ->
-                                        DescribeBranch "All mining laser modules are active." (EndDecisionPath Wait)
+                                        DescribeBranch "All salvaging modules are active." (EndDecisionPath Wait)
 
                                     Just inactiveModule ->
-                                        DescribeBranch "I see an inactive mining module. Click on it to activate."
+                                        DescribeBranch "I see an inactive salvaging module. Click on it to activate."
                                             (EndDecisionPath
                                                 (Act
                                                     { firstAction = inactiveModule.uiNode |> clickOnUIElement MouseButtonLeft
@@ -144,7 +144,7 @@ decideNextActionAcquireLockedTarget memoryReading =
 
         Just asteroidInOverview ->
             if asteroidInOverview |> overviewWindowEntryIsInRange |> Maybe.withDefault False then
-                DescribeBranch "Asteroid is in range. Lock target."
+                DescribeBranch "Wreck is in range. Lock target."
                     (EndDecisionPath
                         (Act
                             { firstAction = asteroidInOverview.uiNode |> clickOnUIElement MouseButtonRight
@@ -160,7 +160,7 @@ decideNextActionAcquireLockedTarget memoryReading =
                     )
 
             else
-                DescribeBranch "Asteroid is not in range. Approach."
+                DescribeBranch "Wreck is not in range. Approach."
                     (EndDecisionPath
                         (Act
                             { firstAction = asteroidInOverview.uiNode |> clickOnUIElement MouseButtonRight
