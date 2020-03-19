@@ -198,14 +198,9 @@ warpToMiningSite memoryReading =
                                     (.entries >> listElementAtWrappedIndex (getEntropyIntFromMemoryReading memoryReading))
                                 >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
                           )
-                        , ( "Click menu entry 'Warp to Within'"
+                        , ( "Click menu entry 'Warp to Within 0 m'"
                           , lastContextMenuOrSubmenu
                                 >> Maybe.andThen (menuEntryContainingTextIgnoringCase "Warp to Within")
-                                >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
-                          )
-                        , ( "Click menu entry 'Within 0 m'"
-                          , lastContextMenuOrSubmenu
-                                >> Maybe.andThen (menuEntryContainingTextIgnoringCase "Within 0 m")
                                 >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
                           )
                         ]
