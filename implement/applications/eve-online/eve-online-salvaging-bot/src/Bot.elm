@@ -91,59 +91,11 @@ decideNextAction botMemory memoryReading =
         DescribeBranch "I see we are warping." (EndDecisionPath Wait)
 
     else if memoryReading.overviewWindow == CanNotSeeIt then
-        DescribeBranch "I see no overview window, assume we are docked." (decideNextActionWhenDocked memoryReading)
+        DescribeBranch "I see no overview window, assume we are docked." (EndDecisionPath Wait)
 
     else
         -- TODO: For robustness, also look also on the previous memory reading. Only continue when both indicate is undocked.
         DescribeBranch "I see we are in space." (decideNextActionWhenInSpace botMemory memoryReading)
-
-
-decideNextActionWhenDocked : ParsedUserInterface -> DecisionPathNode
-decideNextActionWhenDocked memoryReading =
-    case memoryReading |> inventoryWindowItemHangar of
-        Nothing ->
-            DescribeBranch "I do not see the item hangar in the inventory." (EndDecisionPath Wait)
-
-        Just itemHangar ->
-            case memoryReading |> inventoryWindowSelectedContainerFirstItem of
-                Nothing ->
-                    DescribeBranch "I see no item in the ore hold. Time to undock."
-                        (case memoryReading |> activeShipUiElementFromInventoryWindow of
-                            Nothing ->
-                                EndDecisionPath Wait
-
-                            Just activeShipEntry ->
-                                EndDecisionPath
-                                    (Act
-                                        { firstAction =
-                                            activeShipEntry
-                                                |> clickLocationOnInventoryShipEntry
-                                                |> effectMouseClickAtLocation MouseButtonRight
-                                        , followingSteps =
-                                            [ ( "Click menu entry 'undock'."
-                                              , lastContextMenuOrSubmenu
-                                                    >> Maybe.andThen (menuEntryContainingTextIgnoringCase "Undock")
-                                                    >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
-                                              )
-                                            ]
-                                        }
-                                    )
-                        )
-
-                Just itemInInventory ->
-                    DescribeBranch "I see at least one item in the ore hold. Move this to the item hangar."
-                        (EndDecisionPath
-                            (Act
-                                { firstAction =
-                                    Sanderling.SimpleDragAndDrop
-                                        { startLocation = itemInInventory.totalDisplayRegion |> centerFromRegion
-                                        , endLocation = itemHangar.totalDisplayRegion |> centerFromRegion
-                                        , mouseButton = MouseButtonLeft
-                                        }
-                                , followingSteps = []
-                                }
-                            )
-                        )
 
 
 decideNextActionWhenInSpace : BotMemory -> ParsedUserInterface -> DecisionPathNode
