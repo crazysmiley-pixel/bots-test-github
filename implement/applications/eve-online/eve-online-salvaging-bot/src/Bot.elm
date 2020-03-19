@@ -526,7 +526,7 @@ topmostAsteroidFromOverviewWindow =
 
 overviewWindowEntryIsInRange : OverviewWindowEntry -> Maybe Bool
 overviewWindowEntryIsInRange =
-    .distanceInMeters >> Result.map (\distanceInMeters -> distanceInMeters < 15000) >> Result.toMaybe
+    .distanceInMeters >> Result.map (\distanceInMeters -> distanceInMeters < 5000) >> Result.toMaybe
 
 
 overviewWindowEntriesRepresentingAsteroids : ParsedUserInterface -> List OverviewWindowEntry
@@ -539,7 +539,7 @@ overviewWindowEntriesRepresentingAsteroids =
 
 overviewWindowEntryRepresentsAnAsteroid : OverviewWindowEntry -> Bool
 overviewWindowEntryRepresentsAnAsteroid entry =
-    (entry.textsLeftToRight |> List.any (String.toLower >> String.contains "asteroid"))
+    (entry.textsLeftToRight |> List.any (String.toLower >> String.contains "wreck"))
         && (entry.textsLeftToRight |> List.any (String.toLower >> String.contains "belt") |> not)
 
 
