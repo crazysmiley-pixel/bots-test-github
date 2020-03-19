@@ -193,8 +193,8 @@ decideNextActionAcquireLockedTarget : ParsedUserInterface -> DecisionPathNode
 decideNextActionAcquireLockedTarget memoryReading =
     case memoryReading |> topmostAsteroidFromOverviewWindow of
         Nothing ->
-            DescribeBranch "I see no asteroid in the overview. Warp to mining site."
-                (warpToMiningSite memoryReading)
+            DescribeBranch "I see no wreck in the overview. Waiting."
+                (EndDecisionPath Wait)
 
         Just asteroidInOverview ->
             if asteroidInOverview |> overviewWindowEntryIsInRange |> Maybe.withDefault False then
