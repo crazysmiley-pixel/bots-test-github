@@ -176,40 +176,6 @@ decideNextActionAcquireLockedTarget memoryReading =
                     )
 
 
-dockToStation : { stationNameFromInfoPanel : String } -> ParsedUserInterface -> DecisionPathNode
-dockToStation { stationNameFromInfoPanel } memoryReading =
-    case memoryReading.infoPanelLocationInfo of
-        CanNotSeeIt ->
-            DescribeBranch "I cannot see the location info panel." (EndDecisionPath Wait)
-
-        CanSee infoPanelLocationInfo ->
-            EndDecisionPath
-                (Act
-                    { firstAction = infoPanelLocationInfo.listSurroundingsButton |> clickOnUIElement MouseButtonLeft
-                    , followingSteps =
-                        [ ( "Click on menu entry 'stations'."
-                          , lastContextMenuOrSubmenu
-                                >> Maybe.andThen (menuEntryContainingTextIgnoringCase "stations")
-                                >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
-                          )
-                        , ( "Click on menu entry representing the station '" ++ stationNameFromInfoPanel ++ "'."
-                          , lastContextMenuOrSubmenu
-                                >> Maybe.andThen
-                                    (.entries
-                                        >> List.head
-                                    )
-                                >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
-                          )
-                        , ( "Click on menu entry 'dock'"
-                          , lastContextMenuOrSubmenu
-                                >> Maybe.andThen (menuEntryContainingTextIgnoringCase "dock")
-                                >> Maybe.map (.uiNode >> clickOnUIElement MouseButtonLeft)
-                          )
-                        ]
-                    }
-                )
-
-
 warpToMiningSite : ParsedUserInterface -> DecisionPathNode
 warpToMiningSite memoryReading =
     case memoryReading.infoPanelLocationInfo of
